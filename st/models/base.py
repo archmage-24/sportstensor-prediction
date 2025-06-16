@@ -233,6 +233,9 @@ class SportstensorBaseModel(SportPredictionModel):
                         return
 
             bt.logging.warning("Match not found in fetched odds data.")
+            self.prediction.probabilityChoice = random.choice([ProbabilityChoice.HOMETEAM, ProbabilityChoice.AWAYTEAM])
+            self.prediction.probability = 0.5 + random.uniform(0.0, 0.3)  
+            bt.logging.info(f"Fallback prediction: {self.prediction.probabilityChoice} with probability {self.prediction.probability}")
             return
             
         except Exception as e:
