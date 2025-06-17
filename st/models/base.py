@@ -1,6 +1,7 @@
 import os
 import bittensor as bt
 import aiohttp
+import random
 import asyncio
 from dotenv import load_dotenv
 from typing import Optional, Dict, Any
@@ -70,8 +71,8 @@ league_mapping = {
 class SportstensorBaseModel(SportPredictionModel):
     def __init__(self, prediction: MatchPrediction):
         super().__init__(prediction)
-        self.boost_min_percent = 0.03
-        self.boost_max_percent = 0.10
+        self.boost_min_percent = 0.1
+        self.boost_max_percent = 0.2
         self.probability_cap = 0.95
         self.max_retries = 3
         self.retry_delay = 0.5
@@ -228,13 +229,13 @@ class SportstensorBaseModel(SportPredictionModel):
                         else:
                             self.prediction.probabilityChoice = ProbabilityChoice.DRAW
 
-                        self.prediction.probability = max_prob
+                        self.prediction.probability = max_prob + random.uniform(self.boost_min_percent, self.boost_max_percent)
                         bt.logging.info(f"Prediction made: {self.prediction.probabilityChoice} with probability {self.prediction.probability}")
                         return
 
             bt.logging.warning("Match not found in fetched odds data.")
             self.prediction.probabilityChoice = random.choice([ProbabilityChoice.HOMETEAM, ProbabilityChoice.AWAYTEAM])
-            self.prediction.probability = 0.5 + random.uniform(0.0, 0.3)  
+            self.prediction.probability = 0.5 + random.uniform(0.0, 0.3)
             bt.logging.info(f"Fallback prediction: {self.prediction.probabilityChoice} with probability {self.prediction.probability}")
             return
             
