@@ -1,6 +1,7 @@
 import os
 import bittensor as bt
 import aiohttp
+import random
 import asyncio
 import random
 import numpy as np
@@ -73,8 +74,8 @@ league_mapping = {
 class SportstensorBaseModel(SportPredictionModel):
     def __init__(self, prediction: MatchPrediction):
         super().__init__(prediction)
-        self.boost_min_percent = 0.03
-        self.boost_max_percent = 0.10
+        self.boost_min_percent = 0.1
+        self.boost_max_percent = 0.2
         self.probability_cap = 0.95
         self.max_retries = 3
         self.retry_delay = 0.5
@@ -388,12 +389,14 @@ class SportstensorBaseModel(SportPredictionModel):
                             self.prediction.probabilityChoice = ProbabilityChoice.DRAW
 
                         self.prediction.probability = max_prob
-                        bt.logging.info(f"API prediction made: {self.prediction.probabilityChoice} with probability {self.prediction.probability}")
+                        bt.logging.info(f"Prediction made: {self.prediction.probabilityChoice} with probability {self.prediction.probability}")
                         return
 
             # Match not found in API data - use intelligent fallback
             bt.logging.warning("Match not found in fetched odds data.")
-            self.intelligent_fallback_prediction("Match not found in API data")
+            self.prediction.probabilityChoice = random.choice([ProbabilityChoice.HOMETEAM, ProbabilityChoice.AWAYTEAM])
+            self.prediction.probability = 0.5 + random.uniform(0.0, 0.3)  
+            bt.logging.info(f"Fallback prediction: {self.prediction.probabilityChoice} with probability {self.prediction.probability}")
             return
             
         except Exception as e:
